@@ -41,3 +41,18 @@ gh api -X POST /repos/OWNER/REPO/rulesets --input main-branch-base.json
 - `~DEFAULT_BRANCH` targets whatever the repo's default branch is, so these work regardless of `main` vs `master`.
 - The tag ruleset matches `refs/tags/v*` — adjust if your release tags use a different prefix.
 - `require-pr.json` keeps `allowed_merge_methods` to `squash` and `rebase` only, since the base ruleset enforces linear history (merge commits would be rejected anyway).
+
+## Recommended repo settings
+
+Settings that complement the rulesets but can't be expressed in ruleset JSON.
+
+**Settings → General → Pull Requests:**
+- Uncheck **Allow merge commits** — redundant with linear history enforcement, but removes the option from the UI entirely
+- Check **Automatically delete head branches**
+
+**Settings → Security:**
+- Enable **Secret scanning** + **Push protection** — catches committed credentials; push protection blocks them before they land
+- Enable **Dependabot security alerts** + **Dependabot security updates** — low noise, automatically patches known vulnerabilities
+
+**For public repos — Settings → Security → Private vulnerability reporting:**
+- Enable **Private vulnerability reporting** — lets people report security issues without public disclosure
