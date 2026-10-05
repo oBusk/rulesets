@@ -48,7 +48,7 @@ In the GitHub UI:
 - **Signed commits** cause the most friction. GitHub checks every commit on a PR's head branch, so a single unsigned commit blocks the merge, even a squash. There's no bypass, so either the author re-signs their commits, or I squash locally, sign, and push to `main` directly (allowed through the require-pr admin bypass). Dependabot, Copilot, Claude, and release-please commits all come out verified.
 - `require-pr.json` only allows `squash`. Merge commits break linear history, and GitHub can't sign the commits it rewrites during **Rebase and merge**, so those get rejected by the signed-commits rule.
 - Because force pushes are blocked with no bypass, renaming the default branch requires temporarily disabling **main branch base**.
-- The tag ruleset also requires matching tags to look like versions (`v1.2.3`, `pkg@v1.2.3`, `@scope/pkg@1.2.3`). Name patterns are GitHub Enterprise only, so a personal account silently drops this rule on import. It's kept so the ruleset is complete if it ever lands somewhere that enforces it.
+- The tag ruleset also requires matching tags to look like versions (`v1.2.3`, `pkg@v1.2.3`, `@scope/pkg@1.2.3`). Name patterns are GitHub Enterprise only: on a personal account the UI import silently drops the rule, and the API rejects it (`sync.sh` retries without it). It's kept so the ruleset is complete if it ever lands somewhere that enforces it.
 - Required status checks aren't included because check names differ per repo. Add them per repo before turning on auto-merge, otherwise auto-merge merges immediately.
 
 ## Recommended repo settings

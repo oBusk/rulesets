@@ -22,6 +22,24 @@ existing=$(gh api "repos/$repo/rulesets" --paginate --jq '.[] | [.id, .name, ._l
 name_of() { jq -r .name "$1" | tr -d '\r'; }
 id_of() { awk -F'\t' -v name="$1" '$2 == name { print $1; exit }' <<<"$existing"; }
 
+# Name pattern rules (*_pattern) are GitHub Enterprise only. The UI import drops
+# them silently but the API rejects the whole ruleset, so retry without them.
+apply() {
+  local method=$1 path=$2 file=$3 out
+  note=""
+  # No --silent here: gh only prints the error body (with the rule name) without it.
+  if out=$(gh api -X "$method" "$path" --input "$file" 2>&1); then
+    return
+  fi
+  if ! grep -q "Invalid rule '[a-z_]*_pattern'" <<<"$out"; then
+    echo "$out" >&2
+    return 1
+  fi
+  jq '.rules |= map(select(.type | endswith("_pattern") | not))' "$file" |
+    gh api -X "$method" "$path" --input - --silent
+  note="  (without name pattern rules, not available on this plan)"
+}
+
 if [ $# -gt 0 ]; then
   files=("$@")
 else
@@ -38,11 +56,11 @@ for file in "${files[@]}"; do
   name=$(name_of "$file")
   id=$(id_of "$name")
   if [ -n "$id" ]; then
-    gh api -X PUT "repos/$repo/rulesets/$id" --input "$file" --silent
-    echo "updated    $name"
+    apply PUT "repos/$repo/rulesets/$id" "$file"
+    echo "updated    $name$note"
   else
-    gh api -X POST "repos/$repo/rulesets" --input "$file" --silent
-    echo "created    $name"
+    apply POST "repos/$repo/rulesets" "$file"
+    echo "created    $name$note"
   fi
 done
 
