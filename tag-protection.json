@@ -4,7 +4,7 @@
   "enforcement": "active",
   "conditions": {
     "ref_name": {
-      "include": ["refs/tags/v*"],
+      "include": ["refs/tags/v*", "refs/tags/*@*", "refs/tags/@*/*@*"],
       "exclude": []
     }
   },
@@ -17,7 +17,7 @@
       "type": "tag_name_pattern",
       "parameters": {
         "operator": "regex",
-        "pattern": "^v\\d+(\\.\\d+(\\.\\d+.*)?)?$",
+        "pattern": "^(v|((@[^/@]+/)?[^/@]+@)v?)\\d+(\\.\\d+(\\.\\d+.*)?)?$",
         "negate": false
       }
     }
